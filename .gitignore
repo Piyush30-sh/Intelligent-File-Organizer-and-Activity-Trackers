@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+
+# Local environments and secrets
+.venv/
+venv/
+env/
+.env
+.env.*
+!.env.example
+
+# Runtime data and generated logs
+logs/
+*.log
+*.db
+*.sqlite
+*.sqlite3
+
+# PyInstaller output
+build/
+dist/
+*.exe
+
+# Editor and OS files
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini

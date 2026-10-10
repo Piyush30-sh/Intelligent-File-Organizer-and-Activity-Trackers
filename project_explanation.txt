@@ -1,0 +1,111 @@
+Intelligent FO & AT — Project Overview
+====================================
+
+This project is a smart file organizer and activity tracker with a modern GUI, notification system, and secure login. It uses MongoDB for persistent storage and supports free trial usage.
+
+Main Features
+-------------
+- Monitors folders for file changes (creation, deletion, modification, moves, renames)
+- Organizes files into folders based on rules
+- Tracks and logs all activity
+- Sends desktop notifications with custom icon and app name
+- Beautiful GUI with background image and theming
+- Secure user login and registration
+- Free trial mode for monitoring without login
+
+Project Structure
+-----------------
+- finalprojectcode.py — Main application, GUI, notification, file monitoring
+- database.py — MongoDB persistence layer (users, settings, logs, free trials)
+- session.py — Authentication, session management, free trial enforcement
+- folder_guard.py — Folder safety checks (not shown here)
+- activity.ico — App icon (bundled in exe)
+- upscalemedia-transformed.jpeg — Background image (bundled in exe)
+
+Database Setup (database.py)
+----------------------------
+- Uses MongoDB Atlas (cloud) for storage
+- Collections:
+  - users: stores user accounts (username, SHA-256 password hash)
+  - user_settings: per-user folder preferences, theme, last login
+  - free_trials: tracks free trial usage per machine
+  - user_logs: audit trail of user actions
+- Functions for user creation, authentication, settings load/save, audit logging
+- Passwords are hashed before storing
+
+Login System (session.py)
+-------------------------
+- SessionManager singleton tracks current user and settings
+- Registration: checks username/password validity, creates user in DB
+- Login: authenticates against DB, loads user settings
+- Logout: clears session, logs event
+- Free trial: allows limited monitoring without login, tracked in DB
+- All session state is backed by MongoDB
+
+GUI & Notifications (finalprojectcode.py)
+-----------------------------------------
+- Tkinter-based GUI with custom colors and background image
+- App icon set for taskbar and notifications (activity.ico)
+- Desktop notifications use plyer, with app_name and app_icon
+- All required images/icons are bundled in the exe (no need to copy separately)
+- Logging to logs/activity.log for audit trail
+
+Advanced Technical Details
+=========================
+
+File Monitoring & Event Handling
+-------------------------------
+- Uses watchdog's Observer and FileSystemEventHandler to monitor folders in real time.
+- Tracks file and folder events: created, deleted, modified, moved, renamed.
+- Ignores noise/temp files (Office, IDE, browser downloads) using custom logic.
+- Handles special cases: temp file renames, Office/IDE auto-save, placeholder files.
+- Debounce and cooldown logic for code files to prevent notification spam from auto-save.
+- All events are logged to both a file (logs/activity.log) and a live log widget in the GUI.
+
+Live Log Widget
+---------------
+- Tkinter-based window shows real-time activity stream.
+- Supports filtering by event type (created, deleted, modified, moved, renamed) and object type (file/folder).
+- Search, bookmark, export, pause/resume, and clear controls for user convenience.
+- Recent events are highlighted; bookmarks and search hits are visually distinct.
+
+Notification System
+-------------------
+- Uses plyer for cross-platform desktop notifications.
+- Custom app name and icon for branding.
+- Notification batching and filtering to avoid duplicates and spam.
+- All notifications are also logged for audit purposes.
+
+Database Schema & Logic
+-----------------------
+- MongoDB Atlas cloud database.
+- Collections:
+  - users: id, username, username_lower, password_hash, created_at
+  - user_settings: id, user_id, monitored_folder, organize_folder, last_login, theme, extra_json
+  - free_trials: id, machine_id, attempts_used, max_attempts, created_at
+  - user_logs: id, user_id, event_type, detail, timestamp
+- Passwords are hashed with SHA-256 before storing.
+- Unique indexes for usernames and machine IDs.
+- Auto-increment integer IDs for all collections.
+
+Free Trial & Audit Log
+----------------------
+- Each machine gets 2 free monitoring attempts (tracked by a hash of hostname+username).
+- Attempts are tracked in free_trials; blocked after max_attempts.
+- All user actions (register, login, logout, free trial usage, settings changes) are logged in user_logs for audit.
+
+User Settings
+-------------
+- Each user has a settings document: monitored folder, organize folder, theme, last login, extra JSON for future extensibility.
+- Settings are loaded on login and can be updated from the GUI.
+
+Workflow Summary
+----------------
+1. User launches the app (exe bundles all resources).
+2. Registers or logs in (or uses free trial).
+3. Sets up folders to monitor/organize.
+4. App tracks all file/folder activity, sends notifications, and logs events.
+5. User can view, search, and export activity logs from the GUI.
+6. All state is persisted in MongoDB; no local database required.
+
+For more details, see the code in finalprojectcode.py, database.py, and session.py.
